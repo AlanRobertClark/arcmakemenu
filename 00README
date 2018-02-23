@@ -1,0 +1,57 @@
+% ARCMAKEMENU Make an automatic menu structure for a Switchyard.
+% 
+% Modelled after MAKEMENU, but tailored to a Switchyard-styled single
+% callback, based on *automatically-generated* tag strings.
+%
+% It returns a vector of uimenu handles, which are generally stored by the
+% calling program in ud.handle.menu, to enable easy searching for
+% 'Enable'ing and 'Checked' 'On' facility. When a menu item is selected,
+% the callback can be processed for the auto-generated 'Tag' via the CBh.
+%
+% The menu labels are passed as a cellarray of strings with special
+% meanings: 
+%   _ spaces in the desired label are underscores, 
+%   > denotes the menu level, 
+%   & is the keyboard (Alt) menu-shortcut (\& escapes), 
+%   - is a separator bar (---- :-), and 
+%   it may END with ^ for an overall (menu-less) accelerator (Ctrl),
+%   label... (3dots) is the CONVENTION to indicate a DialogBox item.
+%
+% The auto-generated tagstrings are then the same as the labels, dot(.)
+% separated, without the confetti, back with underscores not spaces. 
+%
+% Usage:
+% 
+% CFh = figure ; 
+% menus = { ...  
+%   '&File' ...
+%   '>&Open' ...  
+%   '>>&Data_file' ...  
+%   '>>Ou&tput_file' ...  
+%   '>&Compile\&Run^b' ...  
+%   '>&Save^s' ...
+%   '>----' ...  
+%   '>E&xit^q' ...  
+%   '&Edit' ...  
+%   '>&Copy' ...  
+%   '>&Paste' ...
+%   '>-'} ; 
+% arcmakemenu(CFh, 'diaplot;', menus) ;
+% 
+% Tags would be (eg) File.CompileRun and File.Open.Output_file, handles to
+% the menu items will be stored in ud.menu.handles
+%
+% To process the checking, or disabling of various menu items, note that a
+% findobj(ud.menu.handles','Tag','File.Open') also returns hits to children
+% tags, so that we get a vector of (identical) handles, which is not
+% useful. MUST use the `flat' flag to prevent searching children, since ALL
+% menu items have their own handle. (or search using CFh, but is slower!)
+% Finally, note that findobj is case insensitive. tAg, fiLe.oPEN works!
+%
+% Better to simply:
+%   h=findobj(CFh,'Tag','File.Open'); % SLOWER
+%   h=findobj(ud.menu.handles,'flat','Tag','File.Open'); % PREFERRED
+% to get all handles in a hierarchy
+% h=findobj(ud.handles.menu,'flat','-regexp','Tag','File.Open');
+%   set (h, 'Enable','Off');
+% which produces the desired effect.
