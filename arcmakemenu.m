@@ -1,11 +1,12 @@
 function [handles] = arcmakemenu(CFh, callback, labels);
 % ARCMAKEMENU Make an automatic menu structure for a Switchyard.
 % 
-% Modelled after MAKEMENU, but tailored to a Switchyard-styled single
-% callback, based on *automatically-generated* tag strings.
+% Modelled after MAKEMENU, but tailored to an event-driven,
+% Switchyard-styled single callback GUI, based on *automatically-generated*
+% tag strings.
 %
 % It returns a vector of uimenu handles, which are generally stored by the
-% calling program in ud.handle.menu, to enable easy searching for
+% calling program in ud.handles.menu, to enable easy searching for
 % 'Enable'ing and 'Checked' 'On' facility. When a menu item is selected,
 % the callback can be processed for the auto-generated 'Tag' via the CBh.
 %
@@ -27,8 +28,8 @@ function [handles] = arcmakemenu(CFh, callback, labels);
 % menus = { ...  
 %   '&File' ...
 %   '>&Open' ...  
-%   '>>&Data_file' ...  
-%   '>>Ou&tput_file' ...  
+%   '>>&Data_file...' ...  
+%   '>>Ou&tput_file...' ...  
 %   '>&Compile\&Run^b' ...  
 %   '>&Save^s' ...
 %   '>----' ...  
@@ -37,13 +38,14 @@ function [handles] = arcmakemenu(CFh, callback, labels);
 %   '>&Copy' ...  
 %   '>&Paste' ...
 %   '>-'} ; 
-% arcmakemenu(CFh, 'diaplot;', menus) ;
+% ud.handles.menu = arcmakemenu(CFh, 'diaplot;', menus) ;
 % 
-% Tags would be (eg) File.CompileRun and File.Open.Output_file, handles to
-% the menu items will be stored in ud.menu.handles
+% Auto-generated Tags would be (eg) File.CompileRun and
+% File.Open.Output_file..., handles to the menu items will be stored in
+% ud.handles.menu
 %
 % To process the checking, or disabling of various menu items, note that a
-% findobj(ud.menu.handles','Tag','File.Open') also returns hits to children
+% findobj(ud.handles.menu,'Tag','File.Open') also returns hits to children
 % tags, so that we get a vector of (identical) handles, which is not
 % useful. MUST use the `flat' flag to prevent searching children, since ALL
 % menu items have their own handle. (or search using CFh, but is slower!)
@@ -51,14 +53,33 @@ function [handles] = arcmakemenu(CFh, callback, labels);
 %
 % Better to simply:
 %   h=findobj(CFh,'Tag','File.Open'); % SLOWER
-%   h=findobj(ud.menu.handles,'flat','Tag','File.Open'); % PREFERRED
-% to get all handles in a hierarchy
+%   h=findobj(ud.handles.menu,'flat','Tag','File.Open'); % PREFERRED
+% to get all handles in a hierarchy:
 % h=findobj(ud.handles.menu,'flat','-regexp','Tag','File.Open');
 %   set (h, 'Enable','Off');
 % which produces the desired effect.
+%
+% Switchyard usage is then simple. There is ONE callback, eg 'diaplot;', 
+% 
+%   CBTag = lower(get(CBh, 'Tag'));
+%   
+%   % Actual SwitchYard...
+%   switch CBTag
+%   case 'file.open...'
+%     diaplotFileOpenAppendDataGui(CFh);
+%   case 'file.save_plot...'
+%     diaplotFileSavePlot(CFh);
+%   case 'file.exit'
+%     btn=questdlg('Close diaplot()?','Close Application',...
+%       '&Yes','&No','&No');
+%     if strcmpi(btn, '&Yes')
+%       close(CFh);
+%     endif
+%   case 'date_range.start_date'
+% etc. etc....  
 
 % AlanRobertClark@gmail.com 3 May 2016.
-% 20180213 ud.menu.handles roundabout finally stopped.
+% 20180213 ud.handles.menu roundabout finally stopped.
 
 % Argument sanity.
   narginchk(3,3);
